@@ -1,0 +1,245 @@
+local themeColor = Color3.fromRGB(24, 144, 248)
+local themeColorDarker = Color3.fromRGB(25, 61, 100)
+local themeColorText = Color3.fromRGB(54, 54, 54)
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local coreGui = game.CoreGui
+
+local Tab = {}
+Tab.__index = Tab
+Tab.Properties = {
+	SizeX = 204,
+	SizeY = 54,
+	PaddingY = 2,
+}
+
+local function createTab()
+	local self = {}
+	setmetatable(self, Tab)
+
+	self.Frame = Instance.new("Frame")
+	self.Frame.Size = UDim2.new(0, self.Properties.SizeX, 0, self.Properties.SizeY)
+	self.Frame.Parent = ScreenGui
+	self.Frame.Active = true
+	self.Frame.Draggable = true
+	self.Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	self.Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	self.Frame.BackgroundTransparency = 0.7
+
+	self.Switches = {}
+
+	return self
+end
+
+function Tab:AddSwitch(switch)
+	self.Switches[#self.Switches + 1] = switch
+	self.Frame.Size = UDim2.new(0, self.Properties.SizeX, 0, self.Properties.SizeY * #self.Switches + self.Properties.PaddingY * #self.Switches - 1)
+	switch.Frame.Position = UDim2.new(0, self.Properties.SizeX / 2, 0, ((self.Properties.SizeY + self.Properties.PaddingY) / 2) + self.Properties.SizeY * (#self.Switches - 1)) 
+	switch.Frame.Parent = self.Frame
+end
+
+function Tab:Destroy()
+	self.Frame:Destroy()
+end
+
+local Switch = {}
+Switch.__index = Switch
+Switch.Properties = {
+	SizeX = 200,
+	SizeY = 50,
+}
+
+local function createSwitch()
+	local self = {}
+	setmetatable(self, Switch)
+
+	self.Frame = Instance.new("Frame")
+	self.Frame.Size = UDim2.new(0, self.Properties.SizeX, 0, self.Properties.SizeY)
+	self.Frame.BackgroundColor3 = themeColor
+	self.Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+
+	return self
+end
+
+function Switch:ConvertToLabel(label)
+	self.Frame = Instance.new("TextLabel")
+	self.Frame.Size = UDim2.new(0, self.Properties.SizeX, 0, self.Properties.SizeY)
+	self.Frame.BackgroundColor3 = themeColor
+	self.Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+	self.Frame.Text = label
+	self.Frame.TextSize = 25
+	self.Frame.TextColor3 = themeColorText
+	self.Frame.Font = Enum.Font.Code
+end
+
+function Switch:ConvertToButton(label, func)
+	self.Frame = Instance.new("TextButton")
+	self.Frame.Size = UDim2.new(0, self.Properties.SizeX, 0, self.Properties.SizeY)
+	self.Frame.BackgroundColor3 = themeColor
+	self.Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+	self.Frame.Text = label
+	self.Frame.TextSize = 25
+	self.Frame.TextColor3 = themeColorText
+	self.Frame.Font = Enum.Font.Code
+	self.Frame.MouseButton1Click:Connect(function()
+		func(self.Frame)
+	end)
+end
+
+local fruitsTab = createTab()
+local fruitTitle = createSwitch()
+fruitTitle:ConvertToLabel("Fruits")
+
+
+local tpToFruit = createSwitch()
+local tpactive = false
+local fruitTpTab = nil
+tpToFruit:ConvertToButton("Teleport To Fruit", function(button)
+	tpactive = not tpactive
+	if tpactive then
+		button.BackgroundColor3 = themeColorDarker
+		local player = game:GetService("Players").LocalPlayer
+		local character = player.Character
+		if character then
+			local targetFruits = {}
+			for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
+				if string.sub(v.Name, -5, #v.Name) == "Fruit" then
+					targetFruits[#targetFruits + 1] = v
+				end
+			end
+			fruitTpTab = createTab()
+			local fruitsLabel = createSwitch()
+			fruitsLabel:ConvertToLabel("Fruit Selection")
+			fruitTpTab:AddSwitch(fruitsLabel)
+			for i, v in pairs(targetFruits) do
+				local fruitButton = createSwitch()
+				fruitButton:ConvertToButton(v.Name, function()
+					local startPos = character.PrimaryPart.Position
+					local endPos = v.Handle.Position
+					local distance = (startPos - endPos).Magnitude
+					local lerpInterval = distance / 30
+					character.PrimaryPart.Anchored = true
+					for i = 0, lerpInterval do
+						local lerpPos = startPos:Lerp(endPos, i / lerpInterval)
+						character.PrimaryPart.CFrame = CFrame.new(lerpPos, endPos)
+						wait(0.1)
+					end
+					character.PrimaryPart.CFrame = CFrame.new(endPos)
+					character.PrimaryPart.Anchored = false
+				end)
+				fruitTpTab:AddSwitch(fruitButton)
+			end
+		end
+	else
+		button.BackgroundColor3 = themeColor
+		fruitTpTab:Destroy()
+	end
+end)
+
+local notiactive = false
+local fruitNotifier = createSwitch()
+local notifierTab = nil
+local notiadded
+fruitNotifier:ConvertToButton("Fruit Notifier", function(button)
+	notiactive = not notiactive
+	if notiactive then
+		button.BackgroundColor3 = themeColorDarker
+		
+		notifierTab = createTab()
+		local notifierLabel = createSwitch()
+		notifierLabel:ConvertToLabel("Fruit Notifier")
+		notifierTab:AddSwitch(notifierLabel)
+		
+		for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
+			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
+				local spawnedFruit = createSwitch()
+				spawnedFruit:ConvertToLabel(v.Name)
+				notifierTab:AddSwitch(spawnedFruit)
+			end
+		end
+		
+		notiadded = game:GetService("Workspace").ChildAdded:Connect(function(v)
+			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
+				local spawnedFruit = createSwitch()
+				spawnedFruit:ConvertToLabel(v.Name)
+				notifierTab:AddSwitch(spawnedFruit)
+			end
+		end)
+		
+	else
+		button.BackgroundColor3 = themeColor
+		notifierTab:Destroy()
+		notiadded:Disconnect()
+	end
+end)
+
+local espactive = false
+local espButton = createSwitch()
+local espadded
+local espConn
+local esptexts = {}
+espButton:ConvertToButton("Fruit ESP", function(button)
+	espactive = not espactive
+	if espactive then
+		button.BackgroundColor3 = themeColorDarker
+		
+		local camera = workspace.CurrentCamera
+		
+		local fruits = {}
+		
+		for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
+			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
+				fruits[#fruits + 1] = v
+			end
+		end
+
+		espadded = game:GetService("Workspace").ChildAdded:Connect(function(v)
+			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
+				fruits[#fruits + 1] = v
+			end
+		end)
+		
+		espConn = game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+			for i, v in pairs(fruits) do
+				local text = esptexts[v]
+				if not text then
+					text = Instance.new("TextLabel")
+					text.AnchorPoint = Vector2.new(0.5, 0.5)
+					text.Size = UDim2.new(0, 300, 0, 300)
+					text.TextSize = 40
+					text.BackgroundTransparency = 1
+					text.Text = v.Name
+					text.Parent = ScreenGui
+					esptexts[v] = text
+				end
+				local pos, onScreen = camera:WorldToScreenPoint(v.Handle.Position)
+				if onScreen then
+					text.Position = UDim2.new(0, pos.X, 0, pos.Y)
+				else
+					text:Destroy()
+					esptexts[v] = nil
+				end
+			end
+		end)
+	else
+		button.BackgroundColor3 = themeColor
+		if espConn then
+			espConn:Disconnect()
+		end
+		espadded:Disconnect()
+		for i, v in pairs(esptexts) do
+			v:Destroy()
+		end
+		esptexts = {}
+	end
+end)
+
+fruitsTab:AddSwitch(fruitTitle)
+fruitsTab:AddSwitch(tpToFruit)
+fruitsTab:AddSwitch(fruitNotifier)
+fruitsTab:AddSwitch(espButton)
+
+ScreenGui.Parent = coreGui
