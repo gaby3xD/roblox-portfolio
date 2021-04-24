@@ -90,16 +90,16 @@ function Switch:ConvertToButton(label, func)
 	end)
 end
 
+
 local fruitsTab = createTab()
 local fruitTitle = createSwitch()
 fruitTitle:ConvertToLabel("Fruits")
-
 
 local tpToFruit = createSwitch()
 local tpactive = false
 local fruitTpTab = nil
 local fruitTpTabPos = UDim2.new(0, 0, 0, 0)
-tpToFruit:ConvertToButton("Teleport To Fruit", function(button)
+tpToFruit:ConvertToButton("Fruit Teleport", function(button)
 	tpactive = not tpactive
 	if tpactive then
 		button.BackgroundColor3 = themeColorDarker
@@ -114,7 +114,7 @@ tpToFruit:ConvertToButton("Teleport To Fruit", function(button)
 			end
 			fruitTpTab = createTab(fruitTpTabPos)
 			local fruitsLabel = createSwitch()
-			fruitsLabel:ConvertToLabel("Fruit Selection")
+			fruitsLabel:ConvertToLabel("Fruit Teleport")
 			fruitTpTab:AddSwitch(fruitsLabel)
 			for i, v in pairs(targetFruits) do
 				local fruitButton = createSwitch()
@@ -151,12 +151,12 @@ fruitNotifier:ConvertToButton("Fruit Notifier", function(button)
 	notiactive = not notiactive
 	if notiactive then
 		button.BackgroundColor3 = themeColorDarker
-		
+
 		notifierTab = createTab(notiTabPos)
 		local notifierLabel = createSwitch()
 		notifierLabel:ConvertToLabel("Fruit Notifier")
 		notifierTab:AddSwitch(notifierLabel)
-		
+
 		for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
 			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
 				local spawnedFruit = createSwitch()
@@ -164,7 +164,7 @@ fruitNotifier:ConvertToButton("Fruit Notifier", function(button)
 				notifierTab:AddSwitch(spawnedFruit)
 			end
 		end
-		
+
 		notiadded = game:GetService("Workspace").ChildAdded:Connect(function(v)
 			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
 				local spawnedFruit = createSwitch()
@@ -172,7 +172,7 @@ fruitNotifier:ConvertToButton("Fruit Notifier", function(button)
 				notifierTab:AddSwitch(spawnedFruit)
 			end
 		end)
-		
+
 	else
 		button.BackgroundColor3 = themeColor
 		notiTabPos = notifierTab.Frame.Position
@@ -190,11 +190,11 @@ espButton:ConvertToButton("Fruit ESP", function(button)
 	espactive = not espactive
 	if espactive then
 		button.BackgroundColor3 = themeColorDarker
-		
+
 		local camera = workspace.CurrentCamera
-		
+
 		local fruits = {}
-		
+
 		for i, v in pairs(game:GetService("Workspace"):GetChildren()) do
 			if string.sub(v.Name, -5, #v.Name) == "Fruit" then
 				fruits[#fruits + 1] = v
@@ -206,7 +206,7 @@ espButton:ConvertToButton("Fruit ESP", function(button)
 				fruits[#fruits + 1] = v
 			end
 		end)
-		
+
 		espConn = game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
 			for i, v in pairs(fruits) do
 				local text = esptexts[v]
@@ -242,9 +242,75 @@ espButton:ConvertToButton("Fruit ESP", function(button)
 	end
 end)
 
+
 fruitsTab:AddSwitch(fruitTitle)
 fruitsTab:AddSwitch(tpToFruit)
 fruitsTab:AddSwitch(fruitNotifier)
 fruitsTab:AddSwitch(espButton)
+
+
+local treasureTab = createTab(UDim2.new(0, 204, 0, 0))
+local treasureTitle = createSwitch()
+treasureTitle:ConvertToLabel("Treasure")
+
+local farmSilver = false
+local silverButton = createSwitch()
+silverButton:ConvertToButton("Silver Chest", function(button)
+	farmSilver = not farmSilver
+	if farmSilver then
+		button.BackgroundColor3 = themeColorDarker
+	else
+		button.BackgroundColor3 = themeColor
+	end
+end)
+
+local farmGold = false
+local goldButton = createSwitch()
+goldButton:ConvertToButton("Gold Chest", function(button)
+	farmGold = not farmGold
+	if farmGold then
+		button.BackgroundColor3 = themeColorDarker
+	else
+		button.BackgroundColor3 = themeColor
+	end
+end)
+
+local farmDiamond = false
+local diamondButton = createSwitch()
+diamondButton:ConvertToButton("Diamond Chest", function(button)
+	farmDiamond = not farmDiamond
+	if farmDiamond then
+		button.BackgroundColor3 = themeColorDarker
+	else
+		button.BackgroundColor3 = themeColor
+	end
+end)
+
+spawn(function()
+	while true do
+		wait(1)
+		pcall(function()
+			local player = game:GetService("Players").LocalPlayer
+			local char = player.Character
+			if char then
+				local pp = char.PrimaryPart
+				if pp then
+					if farmDiamond and workspace:FindFirstChild("Chest3") then
+						pp.CFrame = workspace.Chest3.CFrame * CFrame.new(0, 0, -2)
+					elseif farmGold and workspace:FindFirstChild("Chest2") then
+						pp.CFrame = workspace.Chest2.CFrame * CFrame.new(0, 0, -2)
+					elseif farmSilver and workspace:FindFirstChild("Chest1") then
+						pp.CFrame = workspace.Chest1.CFrame * CFrame.new(0, 0, -2)
+					end
+				end
+			end
+		end)
+	end
+end)
+
+treasureTab:AddSwitch(treasureTitle)
+treasureTab:AddSwitch(silverButton)
+treasureTab:AddSwitch(goldButton)
+treasureTab:AddSwitch(diamondButton)
 
 ScreenGui.Parent = coreGui
