@@ -6,7 +6,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local coreGui = game.CoreGui
+local coreGui = game:GetService("CoreGui")
 
 local Tab = {}
 Tab.__index = Tab
@@ -16,12 +16,13 @@ Tab.Properties = {
 	PaddingY = 2,
 }
 
-local function createTab()
+local function createTab(pos)
 	local self = {}
 	setmetatable(self, Tab)
 
 	self.Frame = Instance.new("Frame")
 	self.Frame.Size = UDim2.new(0, self.Properties.SizeX, 0, self.Properties.SizeY)
+	self.Frame.Position = pos or UDim2.new(0, 0, 0, 0)
 	self.Frame.Parent = ScreenGui
 	self.Frame.Active = true
 	self.Frame.Draggable = true
@@ -97,6 +98,7 @@ fruitTitle:ConvertToLabel("Fruits")
 local tpToFruit = createSwitch()
 local tpactive = false
 local fruitTpTab = nil
+local fruitTpTabPos = UDim2.new(0, 0, 0, 0)
 tpToFruit:ConvertToButton("Teleport To Fruit", function(button)
 	tpactive = not tpactive
 	if tpactive then
@@ -110,7 +112,7 @@ tpToFruit:ConvertToButton("Teleport To Fruit", function(button)
 					targetFruits[#targetFruits + 1] = v
 				end
 			end
-			fruitTpTab = createTab()
+			fruitTpTab = createTab(fruitTpTabPos)
 			local fruitsLabel = createSwitch()
 			fruitsLabel:ConvertToLabel("Fruit Selection")
 			fruitTpTab:AddSwitch(fruitsLabel)
@@ -135,6 +137,7 @@ tpToFruit:ConvertToButton("Teleport To Fruit", function(button)
 		end
 	else
 		button.BackgroundColor3 = themeColor
+		fruitTpTabPos = fruitTpTab.Frame.Position
 		fruitTpTab:Destroy()
 	end
 end)
@@ -143,12 +146,13 @@ local notiactive = false
 local fruitNotifier = createSwitch()
 local notifierTab = nil
 local notiadded
+local notiTabPos = UDim2.new(0, 0, 0, 0)
 fruitNotifier:ConvertToButton("Fruit Notifier", function(button)
 	notiactive = not notiactive
 	if notiactive then
 		button.BackgroundColor3 = themeColorDarker
 		
-		notifierTab = createTab()
+		notifierTab = createTab(notiTabPos)
 		local notifierLabel = createSwitch()
 		notifierLabel:ConvertToLabel("Fruit Notifier")
 		notifierTab:AddSwitch(notifierLabel)
@@ -171,6 +175,7 @@ fruitNotifier:ConvertToButton("Fruit Notifier", function(button)
 		
 	else
 		button.BackgroundColor3 = themeColor
+		notiTabPos = notifierTab.Frame.Position
 		notifierTab:Destroy()
 		notiadded:Disconnect()
 	end
