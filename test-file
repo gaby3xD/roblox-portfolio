@@ -2,6 +2,27 @@ local themeColor = Color3.fromRGB(24, 144, 248)
 local themeColorDarker = Color3.fromRGB(25, 61, 100)
 local themeColorText = Color3.fromRGB(54, 54, 54)
 
+local places = {
+	PirateIsland = CFrame.new(740, 2, 1427),
+	MarineIsland = CFrame.new(-2475, 4, 2031),
+	Jungle = CFrame.new(-1294, 5, 0),
+	MiddleTown = CFrame.new(-383, 2, 1502),
+	PirateVillage = CFrame.new(-1134, 1, 3790),
+	Marineford = CFrame.new(-4769, 4, 4296),
+	Prison = CFrame.new(4848, 5, 7340),
+	Volcano = CFrame.new(-5175, 4, 8481),
+	FrozenVillage = CFrame.new(1092, 5, -1131),
+	Desert = CFrame.new(861, 3, 4095),
+	Skypia1 = CFrame.new(-4870, 3, -2351),
+	Skypia2 = CFrame.new(-5227, 388, -2435),
+	Skypia3 = CFrame.new(-5046, 278, -2730),
+	Skypia4 = CFrame.new(-4871, 717, -2622),
+	Skypia5 = CFrame.new(-4728, 843, -2072),
+	Skypia6 = CFrame.new(-7893, 5545, -378),
+	Water7 = CFrame.new(61147, 7, 1864),
+	Freezeburg = CFrame.new(5037, 1, 4051),
+}
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -312,5 +333,19 @@ treasureTab:AddSwitch(treasureTitle)
 treasureTab:AddSwitch(silverButton)
 treasureTab:AddSwitch(goldButton)
 treasureTab:AddSwitch(diamondButton)
+
+local tpTab = createTab()
+local tpLabel = createSwitch()
+tpLabel:ConvertToLabel("Teleporter")
+tpTab:AddSwitch(tpLabel)
+
+for i, v in pairs(places) do
+	local player = game.Players.LocalPlayer
+	local placeButton = createSwitch()
+	placeButton:ConvertToButton(i, function()
+		player.Character.PrimaryPart.CFrame = v
+	end)
+	tpTab:AddSwitch(placeButton)
+end
 
 ScreenGui.Parent = coreGui
